@@ -1,0 +1,17 @@
+const LANE_WIDTH_TO_CAR_WIDTH_RATIO = 2;
+
+function RoadDrawer () {
+
+    this.drawRoad = function(road, canvasWidth, canvasHeight, context) {
+        var combinedWidth = road.laneArray.length * roadWidth;
+        if (isMainRoad) {
+            let left = canvasWidth / 2 - combinedWidth / 2;
+            context.fillStyle = "#000000";
+            context.fillRect(left, 0, left + combinedWidth, canvasHeight);
+        }
+    }
+
+    this.setRoadWidth(carWidth) {
+        this.roadWidth = carWidth * LANE_WIDTH_TO_CAR_WIDTH_RATIO;
+    }
+} 
