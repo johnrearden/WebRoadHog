@@ -1,70 +1,90 @@
-const MAX_DEFLECTION = Math.PI / 8;
 
-function MainCar(xVel, yVel){
-	this.xVel = xVel;
-	this.yVel = yVel;
+
+function MainCar(velocity){
+	this.velocity = velocity;
+	this.xVel = 0;
+	this.yVel = 0;
 	this.xPos = 0;
-	this.maxYVel = 130;
-	this.yVelToMaxRatio = this.yVel / this.maxYVel;
-	this.minYVel = 0;
-	this.maxXVel = 4.5;
-	this.xAccel = .2;
-	this.accel = 1;
-	this.decel = 1.2;
-	this.xAccelModifier = 0.75;
+	this.acceleration = 0.2;
+	this.deceleration = 0.12;
+	this.angularVelocity = 0;
+	this.angularAcceleration = Math.PI / 80;
+	this.angularAccelerationModifier = 0.85;
+	this.maxDeflection = Math.PI / 6;
+	this.maxVelocity = 10;
+	this.defaultDirection = -Math.PI / 2;
+	this.direction = this.defaultDirection;
+	this.velToMaxVelRatio = this.velocity / this.maxVelocity;
+	this.carWidth = 10;
+	this.carHeight = 20;
 	
 	this.accelerate = function() {
-		if (this.yVel < this.maxYVel) {
-			this.yVel += this.accel;
-			if (this.yVel > this.maxYVel) {
-				this.yVel = this.maxYVel;
+		if (this.velocity < this.maxVelocity) {
+			this.velocity += this.acceleration;
+			if (this.velocity > this.maxVelocity) {
+				this.velocity = this.maxVelocity;
 			}
 		}
 	}
 	
 	this.decelerate = function() {
-		if (this.yVel > this.minYVel) {
-			this.yVel -= this.decel;
-			if (this.yVel < this.minYVel) {
-				this.yVel = this.minYVel;
+		if (this.velocity > 0) {
+			this.velocity -= this.deceleration;
+			if (this.velocity < 0) {
+				this.velocity = 0 ;
 			}
 		}
 	}
 
 	this.turnLeft = function() {
-		if (this.xVel > -this.maxXVel * this.yVelToMaxRatio) {
-			this.xVel -= this.xAccel * this.yVelToMaxRatio;
+		if (this.direction > this.defaultDirection - this.maxDeflection) {
+			this.direction -= this.angularAcceleration;
 		}
 	}
 
 	this.turnRight = function() {
-		if (this.xVel < this.maxXVel * this.yVelToMaxRatio) {
-			this.xVel += this.xAccel * this.yVelToMaxRatio;
+		if (this.direction < this.defaultDirection + this.maxDeflection) {
+			this.direction += this.angularAcceleration;
 		}
 	}
 
-	this.update = function(road, scaledCarWidth, controls) {
+	this.update = function(road, controls) {
+		this.calculateVelocityComponents();
 		this.xPos += this.xVel;
-		this.yVelToMaxRatio = this.yVel / this.maxYVel;
-		let halfRoadWidth = road.getHalfRoadWidth();
-		if (this.xPos < - halfRoadWidth + (scaledCarWidth / 2)) {
-			this.xPos = -halfRoadWidth + (scaledCarWidth / 2);
-			this.xVel = this.maxXVel / 2 * this.yVelToMaxRatio;
-		} else if (this.xPos > halfRoadWidth - (scaledCarWidth / 2)) {
-			this.xPos = halfRoadWidth - (scaledCarWidth / 2);
-			this.xVel = this.maxXVel / -2 * this.yVelToMaxRatio;
+		this.velToMaxVelRatio = this.velocity / this.maxVelocity;
+		let maxXPos = (road.laneArray.length * road.laneWidth / 2) - (this.carWidth / 2);
+		console.log('carWidth = ' + this.carWidth + ', car.xPos = ' + Math.trunc(this.xPos));
+		
+		// Prevent the car from going past the edge of the road, and add a small rebound.
+		if (this.xPos < -maxXPos) {
+			this.xPos = -maxXPos;
+			this.direction = this.defaultDirection + this.maxDeflection / 2;
+		} else if (this.xPos > maxXPos) {
+			this.xPos = maxXPos;
+			this.direction = this.defaultDirection - this.maxDeflection / 2;
 		}
 
-		if (this.xVel < 0 && !controls.rightArrowDown && !controls.leftArrowDown) {
-			this.xVel += this.xAccel * this.xAccelModifier;
-		} else if(this.xVel > 0 && !controls.rightArrowDown && !controls.leftArrowDown) {
-			this.xVel -= this.xAccel * this.xAccelModifier;
+		// Allow car direction to return to center when no left/right controls are depressed.
+		if (!controls.leftArrowDown && ! controls.rightArrowDown) {
+			if (this.direction < this.defaultDirection) {
+				this.direction += this.angularAcceleration * this.angularAccelerationModifier;
+			} else if (this.direction > this.defaultDirection) {
+				this.direction -= this.angularAcceleration * this.angularAccelerationModifier;
+			}
+	
+			// Correct for residual drift.
+			if (Math.abs(this.defaultDirection - this.direction) < this.angularAcceleration * 2) {
+				this.direction = this.defaultDirection;
+			}
 		}
 	}
 
 	this.getCarAngle = function() {
-		let sig = Math.sign(this.xVel);
-		let deflection = Math.abs(this.xVel / this.maxXVel * MAX_DEFLECTION);
-		return deflection * sig;
+		return this.direction - this.defaultDirection;
+	}
+
+	this.calculateVelocityComponents = function() {
+		this.xVel = this.velocity * Math.cos(this.direction);
+		this.yVel = this.velocity * -Math.sin(this.direction);
 	}
 } 

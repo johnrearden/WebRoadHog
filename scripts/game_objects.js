@@ -12,13 +12,15 @@ ctx.fillStyle = '#ffffff';
 var canvasWidth, canvasHeight;
 var carImageScaleRatio;
 var carImageScaledWidth, carImageScaledHeight;
-var zoom = 10; // this is simply the number of vertically oriented car sprites that will
-			   // fit in the height of the viewport.
-var myCar = new MainCar(0, 50);
+		   
+var myCar = new MainCar(5);
 var lane = new Lane(0);
 
 var roadDrawer = new RoadDrawer();
-var mainRoad = new Road(4, 0, false);
+
+var mainRoad = new Road(6, 0, false, myCar.carWidth);
+console.log('road.laneWidth == ' + mainRoad.laneWidth);
+
 var controls = new Controls();
 
 // On window load
@@ -26,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
 	console.log("DOMContentLoaded");
 	canvasWidth = myCanvas.width;
 	canvasHeight = myCanvas.height;
+	roadDrawer.setScaleRatio(canvasWidth, canvasHeight, myCar.carHeight);
 	console.log("viewport width = " + canvasWidth + ", height = " + canvasHeight);
 });
 
@@ -79,8 +82,8 @@ function setCarImageReady() {
 	carImageScaleRatio = (canvasHeight / NUMBER_OF_CARS_PER_PAGE) / carImage.height;
 	carImageScaledWidth = carImage.width * carImageScaleRatio;
 	carImageScaledHeight = carImage.height * carImageScaleRatio;
-	roadDrawer.setLaneWidth(carImageScaledWidth);
 	mainRoad.setLaneWidth(roadDrawer.laneWidth);
+	console.log('width : ' + carImage.width + ', height = ' + carImage.height);
 }
 
 // Start timer.
@@ -88,6 +91,9 @@ var go = setInterval(doFrame, 16);
 
 // Main game loop.
 function doFrame() {
+
+	console.log('road.laneWidth == ' + mainRoad.laneWidth);
+	console.log('road.isContraFlow == ' + mainRoad.isContraFlow);
 
 	// Check control key states and act if necessary.
 	controls.update(myCar);
@@ -97,11 +103,12 @@ function doFrame() {
 	yVelReadout.value = "yVel : " + myCar.yVel;
 
 	// Update car and road.
-	myCar.update(mainRoad, carImageScaledWidth, controls);
+	myCar.update(mainRoad, controls);
 	lane.updateLineOffset(myCar.yVel);
 
 	// Draw road.
 	roadDrawer.drawRoad(mainRoad, canvasWidth, canvasHeight, ctx);
+	
 
 	if (carImageReady) {
 
