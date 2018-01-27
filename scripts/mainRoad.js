@@ -1,18 +1,7 @@
-const MAX_LINE_OFFSET = 200;
-const DOTTED_LINE_HEIGHT_RELATIVE_TO_OFFSET = 0.2;
-const LANE_WIDTH_TO_CAR_WIDTH_RATIO = 2.5;
-
 // A lane represents part of a road. The direction field is a float between
 // 0 and 360, with 0 being up, or the direction of the main road.
 function Lane(direction) {
 	this.direction = direction;
-	this.lineOffset = 0;
-
-	this.updateLineOffset = function(carYVel) {
-		var amount = carYVel;
-		this.lineOffset += amount;
-		this.lineOffset = this.lineOffset % MAX_LINE_OFFSET;
-	}
 }
 
 // A road is a group of one or more lanes.
@@ -28,5 +17,11 @@ function Road(numberOfLanes, direction, isContraFlow, carWidth) {
 		this.isMainRoad = true;
 	} else {
 		this.isMainRoad = false;
+	}
+
+	this.getCenterLineForLane(laneNumber) = function() {
+		let totalWidth = this.laneWidth * this.laneArray.length;
+		let distanceFromLeftEdge = (laneNumber + 0.5) * this.laneWidth;
+		return distanceFromLeftEdge - (totalWidth / 2);
 	}
 }

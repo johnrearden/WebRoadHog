@@ -1,11 +1,11 @@
-const CAR_WIDTH_IN_MODEL = 10;
-const CAR_LENGTH_IN_MODEL = 20;
-
-function MainCar(velocity){
-	this.velocity = velocity;
+function Vehicle(road, laneNumber, mainCar, relYPos) {
+    this.xPos = road.getCenterLineForLane(laneNumber);
+    this.relYPos = relYPos;
+    this.laneNumber = laneNumber;
+    
+    this.velocity = 2.5;
 	this.xVel = 0;
 	this.yVel = 0;
-	this.xPos = 0;
 	this.acceleration = 0.025;
 	this.deceleration = 0.03;
 	this.angularVelocity = 0;
@@ -87,4 +87,9 @@ function MainCar(velocity){
 		this.xVel = this.velocity * Math.cos(this.direction);
 		this.yVel = this.velocity * -Math.sin(this.direction);
 	}
-} 
+}
+
+function VehicleCoordinator() {
+    verticalArray = [];
+    horizontalArray = [];
+}

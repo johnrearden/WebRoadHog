@@ -1,26 +1,21 @@
-const MAXVEL = 5;
-const NUMBER_OF_CARS_PER_PAGE = 8;
-
 var myCanvas = document.getElementById("myCanvas");
 var yVelReadout = document.getElementById("yVelReadout");
 var laneOffsetReadout = document.getElementById("laneOffsetReadout");
 var xPosReadout = document.getElementById("xPosReadout");
 var ctx = myCanvas.getContext("2d");
 var carImageReady = false;
-ctx.fillStyle = '#ffffff';
+
 // Global namespace variables:
 var canvasWidth, canvasHeight;
 var carImageScaleRatio;
 var carImageScaledWidth, carImageScaledHeight;
-		   
-var myCar = new MainCar(5);
+
+// Create game objects.
+var myCar = new MainCar(1);
 var lane = new Lane(0);
-
 var roadDrawer = new RoadDrawer();
-
-var mainRoad = new Road(6, 0, false, myCar.carWidth);
-console.log('road.laneWidth == ' + mainRoad.laneWidth);
-
+var carDrawer = new CarDrawer();
+var mainRoad = new Road(4, 0, false, CAR_WIDTH_IN_MODEL);
 var controls = new Controls();
 
 // On window load
@@ -28,8 +23,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
 	console.log("DOMContentLoaded");
 	canvasWidth = myCanvas.width;
 	canvasHeight = myCanvas.height;
-	roadDrawer.setScaleRatio(canvasWidth, canvasHeight, myCar.carHeight);
-	console.log("viewport width = " + canvasWidth + ", height = " + canvasHeight);
+	roadDrawer.setScaleRatio(canvasWidth, canvasHeight, CAR_LENGTH_IN_MODEL);
 });
 
 // Add event listeners for keydown and keyup events.
@@ -48,6 +42,12 @@ document.addEventListener('keydown', (event) => {
 			break;
 		case KEYCODE_RIGHT_ARROW:
 			controls.rightArrowDown = true;
+			break;
+		case KEYCODE_A:
+			controls.a_keyDown = true;
+			break;
+		case KEYCODE_Z:
+			controls.z_keyDown = true;
 			break;
 	}
 	
@@ -69,6 +69,12 @@ document.addEventListener('keyup', (event) => {
 		case KEYCODE_RIGHT_ARROW:
 			controls.rightArrowDown = false;
 			break;
+		case KEYCODE_A:
+			controls.a_keyDown = false;
+			break;
+		case KEYCODE_Z:
+			controls.z_keyDown = false;
+			break;
 	}
 	
 });
@@ -79,11 +85,9 @@ carImage.onload = setCarImageReady;
 carImage.src = "images/red_car.png";
 function setCarImageReady() {
 	carImageReady = true;
-	carImageScaleRatio = (canvasHeight / NUMBER_OF_CARS_PER_PAGE) / carImage.height;
+	carImageScaleRatio = (canvasHeight / INITIAL_ZOOM_LEVEL) / carImage.height;
 	carImageScaledWidth = carImage.width * carImageScaleRatio;
 	carImageScaledHeight = carImage.height * carImageScaleRatio;
-	mainRoad.setLaneWidth(roadDrawer.laneWidth);
-	console.log('width : ' + carImage.width + ', height = ' + carImage.height);
 }
 
 // Start timer.
@@ -92,40 +96,20 @@ var go = setInterval(doFrame, 16);
 // Main game loop.
 function doFrame() {
 
-	console.log('road.laneWidth == ' + mainRoad.laneWidth);
-	console.log('road.isContraFlow == ' + mainRoad.isContraFlow);
-
 	// Check control key states and act if necessary.
-	controls.update(myCar);
+	controls.update(myCar, roadDrawer);
 
 	// Update xPosReadout.
 	xPosReadout.value = "xPosReadout : " + myCar.xPos;
-	yVelReadout.value = "yVel : " + myCar.yVel;
+	
 
 	// Update car and road.
 	myCar.update(mainRoad, controls);
-	lane.updateLineOffset(myCar.yVel);
+	roadDrawer.updateDottedLineOffset(myCar.yVel);
 
 	// Draw road.
 	roadDrawer.drawRoad(mainRoad, canvasWidth, canvasHeight, ctx);
 	
-
-	if (carImageReady) {
-
-		// Translate, then rotate context.
-		ctx.translate(canvasWidth / 2 + myCar.xPos, canvasHeight - carImageScaledHeight * 2);
-		ctx.rotate(myCar.getCarAngle());
-		// Draw car.
-		ctx.drawImage(
-			carImage,
-			-carImageScaledWidth / 2,
-			-carImageScaledHeight / 2, 
-			carImageScaledWidth, 
-			carImageScaledHeight);
-
-		// Rotate canvas back to 0, and translate back to the origin.
-		ctx.rotate(-myCar.getCarAngle());
-		ctx.translate(-(canvasWidth / 2 + myCar.xPos), -(canvasHeight - carImageScaledHeight * 2));
-		
-	}
+	// Draw main car.
+	carDrawer.drawCar(myCar, canvasWidth, canvasHeight, roadDrawer);
 }
