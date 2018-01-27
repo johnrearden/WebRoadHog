@@ -17,6 +17,10 @@ var roadDrawer = new RoadDrawer();
 var carDrawer = new CarDrawer();
 var mainRoad = new Road(4, 0, false, CAR_WIDTH_IN_MODEL);
 var controls = new Controls();
+/* var vehicleCoordinator = new VehicleCoordinator();
+var purpleDroneCar = new DroneCar();
+purpleDroneCar.prototype = new Vehicle(mainRoad, 0, myCar, 0);
+console.log(purpleDroneCar.velocity); */
 
 // On window load
 document.addEventListener('DOMContentLoaded', function(event) {

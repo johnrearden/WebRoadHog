@@ -1,3 +1,6 @@
+const DRONE_CAR_WIDTH = 10;
+const DRONE_CAR_HEIGHT = 20;
+
 function Vehicle(road, laneNumber, mainCar, relYPos) {
     this.xPos = road.getCenterLineForLane(laneNumber);
     this.relYPos = relYPos;
@@ -79,7 +82,7 @@ function Vehicle(road, laneNumber, mainCar, relYPos) {
 		}
 	}
 
-	this.getCarAngle = function() {
+	this.getVehicleAngle = function() {
 		return this.direction - this.defaultDirection;
 	}
 
@@ -92,4 +95,15 @@ function Vehicle(road, laneNumber, mainCar, relYPos) {
 function VehicleCoordinator() {
     verticalArray = [];
     horizontalArray = [];
+
+    this.addVehicle(vehicle) {
+        verticalArray.push(vehicle);
+        horizontalArray.push(vehicle);
+    }
+}
+
+function DroneCar() {
+    this.width = DRONE_CAR_WIDTH;
+    this.height = DRONE_CAR_HEIGHT;
+
 }

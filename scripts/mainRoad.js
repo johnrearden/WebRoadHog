@@ -19,7 +19,7 @@ function Road(numberOfLanes, direction, isContraFlow, carWidth) {
 		this.isMainRoad = false;
 	}
 
-	this.getCenterLineForLane(laneNumber) = function() {
+	this.getCenterLineForLane = function(laneNumber) {
 		let totalWidth = this.laneWidth * this.laneArray.length;
 		let distanceFromLeftEdge = (laneNumber + 0.5) * this.laneWidth;
 		return distanceFromLeftEdge - (totalWidth / 2);
