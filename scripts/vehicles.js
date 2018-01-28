@@ -1,14 +1,13 @@
 const DRONE_CAR_WIDTH = 10;
 const DRONE_CAR_HEIGHT = 20;
 
-function Vehicle(road, laneNumber, mainCar, relYPos) {
-    this.xPos = road.getCenterLineForLane(laneNumber);
-    this.relYPos = relYPos;
-    this.laneNumber = laneNumber;
-    
-    this.velocity = 2.5;
-	this.xVel = 0;
-	this.yVel = 0;
+function Vehicle() {
+    this.xPos = 0;
+    this.laneNumber = 0;
+    this.relYPos = 0;
+    this.imageReady = false;
+    this.xVel = 0;
+    this.yVel = 0;
 	this.acceleration = 0.025;
 	this.deceleration = 0.03;
 	this.angularVelocity = 0;
@@ -51,12 +50,12 @@ function Vehicle(road, laneNumber, mainCar, relYPos) {
 		}
 	}
 
-	this.update = function(road, controls) {
+	this.update = function(road, mainCar) {
 		this.calculateVelocityComponents();
-		this.xPos += this.xVel;
+        this.xPos += this.xVel;
+        this.relYPos += this.yVel - mainCar.yVel;
 		this.velToMaxVelRatio = this.velocity / this.maxVelocity;
 		let maxXPos = (road.laneArray.length * road.laneWidth / 2) - (CAR_WIDTH_IN_MODEL / 2);
-		console.log('carWidth = ' + CAR_WIDTH_IN_MODEL + ', car.xPos = ' + Math.trunc(this.xPos));
 		
 		// Prevent the car from going past the edge of the road, and add a small rebound.
 		if (this.xPos < -maxXPos) {
@@ -93,17 +92,23 @@ function Vehicle(road, laneNumber, mainCar, relYPos) {
 }
 
 function VehicleCoordinator() {
-    verticalArray = [];
-    horizontalArray = [];
+    this.verticalArray = [];
+    this.horizontalArray = [];
 
-    this.addVehicle(vehicle) {
-        verticalArray.push(vehicle);
-        horizontalArray.push(vehicle);
+    this.addVehicle = function(vehicle){
+        this.verticalArray.push(vehicle);
+        this.horizontalArray.push(vehicle);
     }
 }
 
-function DroneCar() {
-    this.width = DRONE_CAR_WIDTH;
-    this.height = DRONE_CAR_HEIGHT;
+function DroneCar(road, mainCar, laneNumber, velocity, relYPos) {
+    this.image = new Image();
+    this.xPos = road.getCenterLineForLane(laneNumber);
+    this.velocity = velocity;
+    this.relYPos = relYPos;
 
+    function setImage(image) {
+        this.image = image;
+    }
 }
+DroneCar.prototype = new Vehicle();

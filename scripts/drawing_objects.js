@@ -1,5 +1,5 @@
 const LINE_WIDTH_TO_LANE_WIDTH_RATIO = 0.08;
-const MAX_ZOOM = 50;
+const MAX_ZOOM = 80;
 const MIN_ZOOM = 6;
 const VERTICAL_REL_CAR_POS = 0.8;
 const INITIAL_ZOOM_LEVEL = 10;
@@ -38,7 +38,6 @@ function CarDrawer() {
 }
 
 function RoadDrawer () {
-
     this.zoomLevel = INITIAL_ZOOM_LEVEL;
     this.scaleRatio = 1;
     this.redrawFullBackground = true;
@@ -117,3 +116,37 @@ function RoadDrawer () {
         this.setScaleRatio(canvasWidth, canvasHeight, CAR_LENGTH_IN_MODEL);
     }
 } 
+
+function VehicleDrawer () {
+    
+    this.drawVehicles = function(vehicleArray, roadDrawer, width, height) {
+        for (i = 0; i < vehicleArray.length; i++) {
+            let vehic = vehicleArray[i];
+            if (vehic.imageReady) {
+    
+                // Calculate amount to scale car image by according to zoom level.
+                let vehicZoomLevel = roadDrawer.zoomLevel / INITIAL_ZOOM_LEVEL;
+
+                // Calculate scaled value of the y-offset.
+                let scaledYOffset = vehic.relYPos * roadDrawer.scaleRatio;
+
+                // Translate, then rotate context.
+                ctx.translate(width / 2 + (vehic.xPos * roadDrawer.scaleRatio), (height * VERTICAL_REL_CAR_POS) - scaledYOffset);
+                ctx.rotate(vehic.getVehicleAngle());
+                // Draw vehicle.
+                ctx.drawImage(
+                    purpleCarImage,
+                    -carImageScaledWidth / vehicZoomLevel / 2,
+                    -carImageScaledHeight / vehicZoomLevel * 3 / 4,
+                    carImageScaledWidth / vehicZoomLevel, 
+                    carImageScaledHeight / vehicZoomLevel);
+        
+                // Rotate canvas back to 0, and translate back to the origin.
+                ctx.rotate(-vehic.getVehicleAngle());
+                ctx.translate(-(width / 2 + (vehic.xPos * roadDrawer.scaleRatio)), -((height * VERTICAL_REL_CAR_POS) - scaledYOffset));
+            }
+        }
+    }
+    
+    
+}

@@ -1,5 +1,6 @@
 const CAR_WIDTH_IN_MODEL = 10;
 const CAR_LENGTH_IN_MODEL = 20;
+const FOOT_OFF_DECELERATION = 0.01;
 
 function MainCar(velocity){
 	this.velocity = velocity;
@@ -9,9 +10,9 @@ function MainCar(velocity){
 	this.acceleration = 0.025;
 	this.deceleration = 0.03;
 	this.angularVelocity = 0;
-	this.angularAcceleration = Math.PI / 80;
+	this.angularAcceleration = Math.PI / 100;
 	this.angularAccelerationModifier = 0.65;
-	this.maxDeflection = Math.PI / 5;
+	this.maxDeflection = Math.PI / 6;
 	this.maxVelocity = 4;
 	this.defaultDirection = -Math.PI / 2;
 	this.direction = this.defaultDirection;
@@ -51,9 +52,12 @@ function MainCar(velocity){
 	this.update = function(road, controls) {
 		this.calculateVelocityComponents();
 		this.xPos += this.xVel;
+		this.velocity -= FOOT_OFF_DECELERATION;
+		if (this.velocity < 0) {
+			this.velocity = 0;
+		}
 		this.velToMaxVelRatio = this.velocity / this.maxVelocity;
 		let maxXPos = (road.laneArray.length * road.laneWidth / 2) - (CAR_WIDTH_IN_MODEL / 2);
-		console.log('carWidth = ' + CAR_WIDTH_IN_MODEL + ', car.xPos = ' + Math.trunc(this.xPos));
 		
 		// Prevent the car from going past the edge of the road, and add a small rebound.
 		if (this.xPos < -maxXPos) {

@@ -7,20 +7,35 @@ var carImageReady = false;
 
 // Global namespace variables:
 var canvasWidth, canvasHeight;
-var carImageScaleRatio;
-var carImageScaledWidth, carImageScaledHeight;
+var carImageScaleRatio, carImageScaledWidth, carImageScaledHeight;
+var purpleCarImageScaleRatio, purpleCarImageScaledWidth, purpleCarImageScaledHeight;
 
 // Create game objects.
-var myCar = new MainCar(1);
+var myCar = new MainCar(3.5);
 var lane = new Lane(0);
 var roadDrawer = new RoadDrawer();
 var carDrawer = new CarDrawer();
-var mainRoad = new Road(4, 0, false, CAR_WIDTH_IN_MODEL);
+var mainRoad = new Road(6, 0, false, CAR_WIDTH_IN_MODEL);
 var controls = new Controls();
-/* var vehicleCoordinator = new VehicleCoordinator();
-var purpleDroneCar = new DroneCar();
-purpleDroneCar.prototype = new Vehicle(mainRoad, 0, myCar, 0);
-console.log(purpleDroneCar.velocity); */
+var vehicleCoordinator = new VehicleCoordinator();
+
+for (i = 0; i < 200; i++) {
+	let vel = 1.5 + (Math.random() * 2);
+	let lane = Math.round(Math.random() * mainRoad.laneArray.length);
+	if (lane >= 3) {
+		vel = -vel;
+	}
+	let droneCar = new DroneCar(
+		mainRoad,
+		myCar,
+		lane,
+		vel,
+		-3000 + 9000 * Math.random()
+	);
+	vehicleCoordinator.addVehicle(droneCar);
+}
+
+var vehicleDrawer = new VehicleDrawer();
 
 // On window load
 document.addEventListener('DOMContentLoaded', function(event) {
@@ -33,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function(event) {
 // Add event listeners for keydown and keyup events.
 document.addEventListener('keydown', (event) => {
 	event = event || window.event;
-	console.log(event.keyCode);
 	switch (event.keyCode) {
 		case KEYCODE_DOWN_ARROW:
 			controls.downArrowDown = true;
@@ -59,7 +73,6 @@ document.addEventListener('keydown', (event) => {
 
 document.addEventListener('keyup', (event) => {
 	event = event || window.event;
-	console.log(event.keyCode);
 	switch (event.keyCode) {
 		case KEYCODE_DOWN_ARROW:
 			controls.downArrowDown = false;
@@ -94,6 +107,20 @@ function setCarImageReady() {
 	carImageScaledHeight = carImage.height * carImageScaleRatio;
 }
 
+// Load the  purple car image asynchronously.
+var purpleCarImage = new Image();
+purpleCarImage.onload = setPurpleCarImageReady;
+purpleCarImage.src = "images/purple_car.png";
+function setPurpleCarImageReady() {
+	for (i = 0; i < vehicleCoordinator.verticalArray.length; i++) {
+		let v = vehicleCoordinator.verticalArray[i];
+		v.imageReady = true;
+	}
+	purpleCarImageScaleRatio = (canvasHeight / INITIAL_ZOOM_LEVEL) / purpleCarImage.height;
+	purpleCarImageScaledWidth = purpleCarImage.width * purpleCarImageScaleRatio;
+	purpleCarImageScaledHeight = purpleCarImage.height * purpleCarImageScaleRatio;
+}
+
 // Start timer.
 var go = setInterval(doFrame, 16);
 
@@ -106,14 +133,22 @@ function doFrame() {
 	// Update xPosReadout.
 	xPosReadout.value = "xPosReadout : " + myCar.xPos;
 	
-
 	// Update car and road.
 	myCar.update(mainRoad, controls);
 	roadDrawer.updateDottedLineOffset(myCar.yVel);
+
+	// Update vehicles.
+	for (i = 0; i < vehicleCoordinator.verticalArray.length; i++) {
+		let v = vehicleCoordinator.verticalArray[i];
+		v.update(mainRoad, myCar);
+	}
 
 	// Draw road.
 	roadDrawer.drawRoad(mainRoad, canvasWidth, canvasHeight, ctx);
 	
 	// Draw main car.
 	carDrawer.drawCar(myCar, canvasWidth, canvasHeight, roadDrawer);
+
+	// Draw other vehicles.
+	vehicleDrawer.drawVehicles(vehicleCoordinator.verticalArray, roadDrawer, canvasWidth, canvasHeight);
 }
